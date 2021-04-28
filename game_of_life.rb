@@ -38,6 +38,8 @@ class DemoWindow < Gosu::Window
     @array_of_cells = Array.new(@x_cells + 1) { Array.new(@y_cells + 1) }
     @total_cells = @x_cells * @y_cells
     @speed = 0.1
+    @playing = false
+
     x = 0
     while x <= @x_cells
       y = 0
@@ -55,23 +57,26 @@ class DemoWindow < Gosu::Window
       end
       x += 1
     end
+    print("Left click to create life \nRight click to destroy life \nPress P to start and stop the game \nCreating life only works while paused.")
   end
 
   # Update happens before draw
   def update
-    all_alive_check()
-    sleep(@speed)
-    if (RANDOM_LIFE and (rand(@total_cells) >= (@total_cells/2)))
-      x = rand(@x_cells)
-      y = rand(@y_cells)
-      @array_of_cells[x][y].alive = true
-      @array_of_cells[x][y].c = LIVING_COLOUR
-      @array_of_cells[x + 1][y].alive = true
-      @array_of_cells[x + 1][y].c = LIVING_COLOUR
-      @array_of_cells[x][y + 1].alive = true
-      @array_of_cells[x][y + 1].c = LIVING_COLOUR
-      @array_of_cells[x + 1][y + 1].alive = true
-      @array_of_cells[x + 1][y + 1].c = LIVING_COLOUR
+    if(@playing)
+      all_alive_check()
+      sleep(@speed)
+      if (RANDOM_LIFE and (rand(@total_cells) >= (@total_cells/2)))
+        x = rand(@x_cells)
+        y = rand(@y_cells)
+        @array_of_cells[x][y].alive = true
+        @array_of_cells[x][y].c = LIVING_COLOUR
+        @array_of_cells[x + 1][y].alive = true
+        @array_of_cells[x + 1][y].c = LIVING_COLOUR
+        @array_of_cells[x][y + 1].alive = true
+        @array_of_cells[x][y + 1].c = LIVING_COLOUR
+        @array_of_cells[x + 1][y + 1].alive = true
+        @array_of_cells[x + 1][y + 1].c = LIVING_COLOUR
+      end
     end
   end
 
@@ -95,35 +100,39 @@ class DemoWindow < Gosu::Window
 
   def button_down(id)
     case id
-    when Gosu::MsLeft # Create life with a left click
+    when Gosu::MsLeft # Create life with a left click, originally created a large square that could exist while the game is playing. Now only creates a single square that will die if the game is playing.
       @locs = [mouse_x, mouse_y]
       finding_x = (mouse_x / CELL_DIM).to_i
       finding_y = (mouse_y / CELL_DIM).to_i
       @array_of_cells[finding_x][finding_y].alive = true
       @array_of_cells[finding_x][finding_y].c = LIVING_COLOUR
-      @array_of_cells[finding_x + 1][finding_y].alive = true
-      @array_of_cells[finding_x + 1][finding_y].c = LIVING_COLOUR
-      @array_of_cells[finding_x][finding_y + 1].alive = true
-      @array_of_cells[finding_x][finding_y + 1].c = LIVING_COLOUR
-      @array_of_cells[finding_x + 1][finding_y + 1].alive = true
-      @array_of_cells[finding_x + 1][finding_y + 1].c = LIVING_COLOUR
-      neighbour_check_debug(finding_x, finding_y)
+      # @array_of_cells[finding_x + 1][finding_y].alive = true
+      # @array_of_cells[finding_x + 1][finding_y].c = LIVING_COLOUR
+      # @array_of_cells[finding_x][finding_y + 1].alive = true
+      # @array_of_cells[finding_x][finding_y + 1].c = LIVING_COLOUR
+      # @array_of_cells[finding_x + 1][finding_y + 1].alive = true
+      # @array_of_cells[finding_x + 1][finding_y + 1].c = LIVING_COLOUR
+      # neighbour_check_debug(finding_x, finding_y)
     when Gosu::MsRight # Destroy life with a right click
       @locs = [mouse_x, mouse_y]
       finding_x = (mouse_x / CELL_DIM).to_i
       finding_y = (mouse_y / CELL_DIM).to_i
       @array_of_cells[finding_x][finding_y].alive = false
       @array_of_cells[finding_x][finding_y].c = DEAD_COLOUR
-      @array_of_cells[finding_x + 1][finding_y].alive = false
-      @array_of_cells[finding_x + 1][finding_y].c = DEAD_COLOUR
-      @array_of_cells[finding_x][finding_y + 1].alive = false
-      @array_of_cells[finding_x][finding_y + 1].c = DEAD_COLOUR
-      @array_of_cells[finding_x + 1][finding_y + 1].alive = false
-      @array_of_cells[finding_x + 1][finding_y + 1].c = DEAD_COLOUR
+      # @array_of_cells[finding_x + 1][finding_y].alive = false
+      # @array_of_cells[finding_x + 1][finding_y].c = DEAD_COLOUR
+      # @array_of_cells[finding_x][finding_y + 1].alive = false
+      # @array_of_cells[finding_x][finding_y + 1].c = DEAD_COLOUR
+      # @array_of_cells[finding_x + 1][finding_y + 1].alive = false
+      # @array_of_cells[finding_x + 1][finding_y + 1].c = DEAD_COLOUR
     when Gosu::KB_RIGHT # Gotta go fast
       @speed -= 0.01 if @speed > 0.01
     when Gosu::KB_LEFT # Slow down
       @speed += 0.01
+    when Gosu::KB_R
+      @speed = 0.1
+    when Gosu::KB_P
+      @playing = !@playing
     end
   end
 

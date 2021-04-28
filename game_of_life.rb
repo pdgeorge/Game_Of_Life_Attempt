@@ -12,8 +12,8 @@ BACKGROUND = Gosu::Color::WHITE
 DEAD_COLOUR = Gosu::Color::WHITE
 LIVING_COLOUR = Gosu::Color::BLUE
 BORDER_COLOUR = Gosu::Color::BLACK
-SEED_MIN = 00 # The higher this number is, the more likely a cell will be alive on game start. For one frame.
-RANDOM_LIFE = false # defines if life randomly spawns
+SEED_MIN = 200 # The higher this number is, the more likely a cell will be alive on game start. For one frame.
+RANDOM_LIFE = false # Defines if life randomly spawns
 
 class Cell
   attr_accessor :x, :y, :c, :alive, :neighbours
@@ -30,9 +30,9 @@ end
 class DemoWindow < Gosu::Window
 
   def initialize
-    #calls initialize from where it was inherited, passing width and height.
+    # Calls initialize from where it was inherited, passing width and height.
     super(WIN_WIDTH, WIN_HEIGHT, false)
-    @locs = [60,60] #mouse location
+    @locs = [60,60] # Mouse location
     @x_cells = WIN_WIDTH / CELL_DIM
     @y_cells = WIN_HEIGHT / CELL_DIM
     @array_of_cells = Array.new(@x_cells + 1) { Array.new(@y_cells + 1) }
@@ -57,7 +57,7 @@ class DemoWindow < Gosu::Window
     end
   end
 
-  #update happens before draw
+  # Update happens before draw
   def update
     all_alive_check()
     sleep(@speed)
@@ -75,7 +75,7 @@ class DemoWindow < Gosu::Window
     end
   end
 
-  #all drawing happens in draw
+  # All drawing happens in draw
   def draw
     Gosu.draw_rect(0, 0, WIN_WIDTH, WIN_HEIGHT, BACKGROUND, 0, mode=:default)
     x = 0
@@ -95,7 +95,7 @@ class DemoWindow < Gosu::Window
 
   def button_down(id)
     case id
-    when Gosu::MsLeft #create life with a left click
+    when Gosu::MsLeft # Create life with a left click
       @locs = [mouse_x, mouse_y]
       finding_x = (mouse_x / CELL_DIM).to_i
       finding_y = (mouse_y / CELL_DIM).to_i
@@ -108,7 +108,7 @@ class DemoWindow < Gosu::Window
       @array_of_cells[finding_x + 1][finding_y + 1].alive = true
       @array_of_cells[finding_x + 1][finding_y + 1].c = LIVING_COLOUR
       neighbour_check_debug(finding_x, finding_y)
-    when Gosu::MsRight #destroy life with a right click
+    when Gosu::MsRight # Destroy life with a right click
       @locs = [mouse_x, mouse_y]
       finding_x = (mouse_x / CELL_DIM).to_i
       finding_y = (mouse_y / CELL_DIM).to_i
@@ -120,9 +120,9 @@ class DemoWindow < Gosu::Window
       @array_of_cells[finding_x][finding_y + 1].c = DEAD_COLOUR
       @array_of_cells[finding_x + 1][finding_y + 1].alive = false
       @array_of_cells[finding_x + 1][finding_y + 1].c = DEAD_COLOUR
-    when Gosu::KB_RIGHT
+    when Gosu::KB_RIGHT # Gotta go fast
       @speed -= 0.01 if @speed > 0.01
-    when Gosu::KB_LEFT
+    when Gosu::KB_LEFT # Slow down
       @speed += 0.01
     end
   end
@@ -147,53 +147,55 @@ class DemoWindow < Gosu::Window
 
   def neighbour_check(x, y)
     @array_of_cells[x][y].neighbours = 0
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y - 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y - 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y - 1].alive == true
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y].alive == true && x < (WIN_HEIGHT / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y - 1].alive == true && y > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y].alive == true && x > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y - 1].alive == true && y > 0 && x > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y - 1].alive == true && x < (WIN_HEIGHT / 10 - 1) && y > 0
     single_alive_check(x, y)
   end
 
+  # Debug test to verify that each cell is properly aware of how many neighbours it has.
+  # Couldn't add puts statement to regular neighbour_check, the number of outputs would be impossible to read.
   def neighbour_check_debug(x, y)
     @array_of_cells[x][y].neighbours = 0
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y - 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y - 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y + 1].alive == true
-    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y - 1].alive == true
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y].alive == true && x < (WIN_HEIGHT / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x][y - 1].alive == true && y > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y].alive == true && x > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y - 1].alive == true && y > 0 && x > 0
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x - 1][y + 1].alive == true && y < (WIN_WIDTH / 10 - 1)
+    @array_of_cells[x][y].neighbours += 1 if @array_of_cells[x + 1][y - 1].alive == true && x < (WIN_HEIGHT / 10 - 1) && y > 0
     puts(@array_of_cells[x][y].neighbours)
     single_alive_check(x, y)
   end
 
   def single_alive_check(x, y)
-    #cell with less than 2 neighbours dies of loneliness
+    # Cell with less than 2 neighbours dies of loneliness
     if(@array_of_cells[x][y].alive == true and @array_of_cells[x][y].neighbours < 2)
       @array_of_cells[x][y].alive = false
       @array_of_cells[x][y].c = DEAD_COLOUR
       return
-    #cell with more than 3 neighbours die of overpopulation
+    # Cell with more than 3 neighbours die of overpopulation
     elsif(@array_of_cells[x][y].alive == true and @array_of_cells[x][y].neighbours > 3)
       @array_of_cells[x][y].alive = false
       @array_of_cells[x][y].c = DEAD_COLOUR
       return
-    #dead cell with exactly 3 neighbours comes to life from repopulation
+    # Dead cell with exactly 3 neighbours comes to life from repopulation
     elsif(@array_of_cells[x][y].alive == false and @array_of_cells[x][y].neighbours == 3)
       @array_of_cells[x][y].alive = true
       @array_of_cells[x][y].c = LIVING_COLOUR
       return
     end
-    #living cell with 2 or 3 neighbours not listed as they will simply remain alive
+    # Living cell with 2 or 3 neighbours not listed as they will simply remain alive
   end
 end
 
-#creates new DemoWindow and opens it
+# Creates new DemoWindow and opens it
 DemoWindow.new.show
 
 # Attempted an 'elegant' solution to the neighbour check. It was anything but.
